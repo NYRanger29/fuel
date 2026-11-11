@@ -3,8 +3,8 @@
 Grant's personal app for tracking nutrition, workouts, and body stats.
 
 ## Build in progress
-The app is built but not yet online. Read HANDOFF.md for the remaining
-publishing steps.
+The app is built and live. Read HANDOFF.md for the remaining setup steps
+(API key, first real tests).
 
 ## Decisions so far
 - Name: Fuel. Phone web app (installable to the home screen, also works on a laptop). No App Store.
@@ -12,7 +12,7 @@ publishing steps.
 - Code layout: `src/views/` has one file per screen; `src/store.js` holds data; `src/ai.js` talks to Claude.
 - Data: saved on the device (IndexedDB). Settings and the API key are in localStorage; the key is never in backups.
 - AI: Claude API called straight from the browser with the key Grant enters in Settings. Default model `claude-opus-5-5`.
-- Hosting: GitHub Pages, public repo, deployed by `.github/workflows/deploy.yml`.
+- Hosting: GitHub Pages at https://nyranger29.github.io/fuel/ from the public repo NYRanger29/fuel. Every push to main redeploys via `.github/workflows/deploy.yml`.
 - Goal setting: build muscle.
 - Tools available: Node.js, npm, Git, GitHub CLI (gh).
 - Default branch: main.
