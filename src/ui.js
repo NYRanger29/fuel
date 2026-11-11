@@ -237,11 +237,11 @@ export function lineChart(points, { height = 170, unit = '', trend = null } = {}
 }
 
 // bars: [{ label, value, hit }]. Draws small upright bars with a target line.
-export function barChart(bars, { target = 0, unit = '' } = {}) {
+export function barChart(bars, { target = 0, unit = '', tone = '' } = {}) {
   const max = Math.max(target * 1.15, ...bars.map((b) => b.value), 1);
   return `
-  <div class="bars" role="img" aria-label="${esc(bars.map((b) => `${b.label}: ${round(b.value)}${unit}`).join(', '))}">
-    ${target ? `<div class="bars-target" style="bottom:calc(${(target / max) * 100}% * 0.82 + 18px)"></div>` : ''}
+  <div class="bars ${tone}" role="img" aria-label="${esc(bars.map((b) => `${b.label}: ${round(b.value)}${unit}`).join(', '))}">
+    ${target ? `<div class="bars-target" style="bottom:calc(18px + (100% - 18px) * ${(target / max).toFixed(4)})"></div>` : ''}
     ${bars
       .map(
         (b) => `
