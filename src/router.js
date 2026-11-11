@@ -11,6 +11,9 @@ export const TABS = [
 ];
 
 const views = {};
+let shownTab = null;
+
+export const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export function register(name, render) {
   views[name] = render;
@@ -24,13 +27,30 @@ export function currentTab() {
 // Redraw the screen that is showing. Each redraw gets a brand new container,
 // so click listeners from the old drawing are thrown away with it.
 export function refresh({ keepScroll = true } = {}) {
-  const view = document.getElementById('view');
-  const scroll = window.scrollY;
-  const screen = document.createElement('div');
-  screen.className = 'screen';
-  views[currentTab()](screen);
-  view.replaceChildren(screen);
-  window.scrollTo(0, keepScroll ? scroll : 0);
+  const tab = currentTab();
+  const changed = tab !== shownTab;
+  const order = (t) => TABS.findIndex(([id]) => id === t);
+  const direction = shownTab && order(tab) < order(shownTab) ? 'back' : 'forward';
+  shownTab = tab;
+
+  const swap = () => {
+    const view = document.getElementById('view');
+    const scroll = window.scrollY;
+    const screen = document.createElement('div');
+    screen.className = changed ? 'screen entering' : 'screen';
+    views[tab](screen);
+    view.replaceChildren(screen);
+    window.scrollTo(0, keepScroll && !changed ? scroll : 0);
+  };
+
+  // When the tab changes, slide the old screen out and the new one in.
+  // Browsers without View Transitions (or with reduced motion on) just swap.
+  if (changed && document.startViewTransition && !reducedMotion() && document.getElementById('view').childElementCount) {
+    document.documentElement.dataset.nav = direction;
+    document.startViewTransition(swap);
+  } else {
+    swap();
+  }
 }
 
 export function go(name) {

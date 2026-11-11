@@ -1,7 +1,8 @@
 // main.js: the starting point. It loads the saved data, draws the tab bar,
 // and shows the right screen.
 
-import '@fontsource-variable/bricolage-grotesque';
+// The "wdth" version includes narrow letter widths, used for scoreboard numbers.
+import '@fontsource-variable/bricolage-grotesque/wdth.css';
 import '@fontsource-variable/figtree';
 import './style.css';
 import * as store from './store.js';
@@ -19,12 +20,21 @@ register('pantry', pantry.render);
 register('train', train.render);
 register('body', body.render);
 
+// The tab bar is drawn once. Switching tabs only moves the highlight pill,
+// so it can slide smoothly from one tab to the next.
 function drawTabs() {
+  const nav = document.getElementById('tabs');
+  if (!nav.firstElementChild) {
+    nav.innerHTML = `<div class="tabs-inner"><span class="tab-pill" aria-hidden="true"></span>${TABS.map(
+      ([id, label]) => `<a class="tab" data-tab="${id}" href="#/${id}">${icon(id, 24)}<span>${label}</span></a>`,
+    ).join('')}</div>`;
+  }
   const current = currentTab();
-  document.getElementById('tabs').innerHTML = TABS.map(
-    ([id, label]) =>
-      `<a class="tab${id === current ? ' on' : ''}" href="#/${id}"${id === current ? ' aria-current="page"' : ''}>${icon(id, 24)}<span>${label}</span></a>`,
-  ).join('');
+  nav.querySelector('.tabs-inner').style.setProperty('--tab', TABS.findIndex(([id]) => id === current));
+  for (const a of nav.querySelectorAll('.tab')) {
+    if (a.dataset.tab === current) a.setAttribute('aria-current', 'page');
+    else a.removeAttribute('aria-current');
+  }
 }
 
 window.addEventListener('hashchange', () => {

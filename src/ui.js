@@ -79,6 +79,7 @@ export function openSheet({ title, html, onMount, onClose, wide = false }) {
   wrap.innerHTML = `
     <div class="sheet-backdrop" data-sheet-close></div>
     <section class="sheet${wide ? ' sheet-wide' : ''}" role="dialog" aria-modal="true" aria-label="${esc(title)}">
+      <div class="sheet-grab" aria-hidden="true"></div>
       <header class="sheet-head">
         <h2>${esc(title)}</h2>
         <button class="icon-btn" data-sheet-close aria-label="Close">${icon('close')}</button>
@@ -103,7 +104,7 @@ export function openSheet({ title, html, onMount, onClose, wide = false }) {
       closed = true;
       document.removeEventListener('keydown', onKey);
       wrap.classList.add('closing');
-      setTimeout(() => wrap.remove(), 180);
+      setTimeout(() => wrap.remove(), 220);
       if (previousFocus?.focus) previousFocus.focus({ preventScroll: true });
       onClose?.(result);
     },
@@ -116,6 +117,42 @@ export function openSheet({ title, html, onMount, onClose, wide = false }) {
   wrap.addEventListener('click', (event) => {
     if (event.target.closest('[data-sheet-close]')) api.close();
   });
+
+  // Swipe down on the top of the panel to close it.
+  const sheetEl = wrap.querySelector('.sheet');
+  const handle = [wrap.querySelector('.sheet-grab'), wrap.querySelector('.sheet-head')];
+  let startY = null;
+  let dy = 0;
+  const onMove = (e) => {
+    if (startY == null) return;
+    dy = Math.max(0, e.clientY - startY);
+    sheetEl.style.transform = `translateY(${dy}px)`;
+  };
+  const onUp = () => {
+    if (startY == null) return;
+    startY = null;
+    sheetEl.classList.remove('dragging');
+    if (dy > 90) {
+      sheetEl.style.transform = `translateY(${dy}px)`;
+      api.close();
+    } else {
+      sheetEl.style.transform = '';
+    }
+    window.removeEventListener('pointermove', onMove);
+    window.removeEventListener('pointerup', onUp);
+    window.removeEventListener('pointercancel', onUp);
+  };
+  for (const h of handle) {
+    h.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('button') || e.button > 0) return;
+      startY = e.clientY;
+      dy = 0;
+      sheetEl.classList.add('dragging');
+      window.addEventListener('pointermove', onMove);
+      window.addEventListener('pointerup', onUp);
+      window.addEventListener('pointercancel', onUp);
+    });
+  }
   document.addEventListener('keydown', onKey);
   body.innerHTML = html || '';
   sheetRoot().appendChild(wrap);
@@ -244,8 +281,8 @@ export function barChart(bars, { target = 0, unit = '', tone = '' } = {}) {
     ${target ? `<div class="bars-target" style="bottom:calc(18px + (100% - 18px) * ${(target / max).toFixed(4)})"></div>` : ''}
     ${bars
       .map(
-        (b) => `
-      <div class="bar-col">
+        (b, i) => `
+      <div class="bar-col" style="--i:${i}">
         <div class="bar-track"><div class="bar-fill${b.hit ? ' hit' : ''}" style="height:${Math.max(b.value ? 3 : 0, (b.value / max) * 100)}%"></div></div>
         <div class="bar-label">${esc(b.label)}</div>
       </div>`,
