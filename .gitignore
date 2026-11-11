@@ -1,0 +1,17 @@
+# Installed packages (re-downloadable, very large)
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Secrets and local settings
+.env
+.env.*
+!.env.example
+
+# Editor and system junk
+.vscode/
+.DS_Store
+Thumbs.db
+*.log
